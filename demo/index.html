@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>bull框架测试</title>
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-8-2/esl.js"></script>
+    <script>
+    require.config({
+        'baseUrl': 'src',
+        'packages': [
+            {
+                'name': 'bull',
+                'location': '../../src/',
+                'main': 'main'
+            }
+        ]
+    });
+    </script>
+</head>
+
+<body>
+    <div id="main">
+    </div>
+    <script>
+        require(['bull', 'config'], function (bull, config) {
+            bull.init(config);
+            bull.get('main').init(12);
+        });
+    </script>
+</body>
+</html>

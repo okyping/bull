@@ -15,7 +15,7 @@ define(function (require) {
     var aspectRegister = aop.aspectRegister;
 
     /**
-     * 处理一个require来的module，把所有的方法处理为jointPoint
+     * 处理一个require来的module，把所有的方法处理为advisor
      *
      * @return {Object}
      */

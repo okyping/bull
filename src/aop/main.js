@@ -27,7 +27,7 @@ define(function (require) {
      *
      */
     function before(modName, funcName, args, jointPoint) {
-        args = Array.prototype.slice(args, 0);
+        args = Array.prototype.slice.call(args, 0);
         aopEmitter.emit(TypeEnum.BEFORE, modName, funcName, args, jointPoint);
     }
 
@@ -40,7 +40,7 @@ define(function (require) {
      *
      */
     function after(modName, funcName, args, jointPoint) {
-        args = Array.prototype.slice(args, 0);
+        args = Array.prototype.slice.call(args, 0);
         aopEmitter.emit(TypeEnum.AFTER, modName, funcName, args, jointPoint);
     }
 
@@ -54,22 +54,16 @@ define(function (require) {
      */
     exports.createAopProxy = function (modName, funcName, func) {
         return function () {
-            var ret = before(
+            before(
                 modName, funcName, arguments,
                 new JointPoint(this, arguments, modName, funcName, func)
             );
-            // 将来考虑是否可以在before里阻止方法执行，
-            // 异步函数可先阻止，等异步回调后再执行
-            // if (ret === false) {
-            //     // 阻止当前函数执行
-            //     // 为异步情况考虑
-            //     return;
-            // }
-            func.apply(this, arguments);
+            var ret = func.apply(this, arguments);
             after(
-                modName, funcName,
+                modName, funcName, arguments,
                 new JointPoint(this, arguments, modName, funcName, func)
             );
+            return ret;
         }
     };
 

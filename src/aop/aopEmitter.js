@@ -23,7 +23,6 @@ define(function (require) {
     exports.on = function (type, modName, funcName, args, func) {
         type = 'type' + type;
         var cur = events;
-        var args = Array.prototype.slice(arguments, 0);
         cur[type] = cur[type] || {};
         cur = cur[type];
         cur[modName] = events[modName] || {};
@@ -62,12 +61,12 @@ define(function (require) {
             // 比较参数是否符合规定
             for (var j = 0; j < item.args.length; j++) {
                 // 是否是正则表达式
-                if (item.args.test) {
-                    ret = ret && item.args.test(args[j]);
+                if (item.args[j].test) {
+                    ret = ret && item.args[j].test(args[j]);
                 }
                 // 其他类型则判断是否相等
                 else {
-                    ret = ret && item.args === args[j];
+                    ret = ret && item.args[i] === args[j];
                 }
                 if (!ret) {
                     break;
