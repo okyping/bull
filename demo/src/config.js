@@ -17,26 +17,16 @@ define(function (require) {
             {
                 id: 'aspectTest',
                 pointCut: [
-                    // {
-                    //     modName: 'a',
-                    //     funcName: 'sayHello',
-                    //     before: 'sayHi1'
-                    // },
-                    {
-                        modName: 'a',
-                        funcName: 'sayHello',
-                        after: 'sayHi2'
-                    }
+                    // package.modName.funcName.args, before, after
+                    // 'test.a.sayHello.a|b|c, sayHi1, sayHi2'
+                    'test.a.sayHello, sayHi1',
+                    'test.a.sayHello, , sayHi2'
                 ]
             },
             {
                 id: 'a',
                 pointCut: [
-                    {
-                        modName: 'main',
-                        funcName: 'init',
-                        after: 'sayHello'
-                    }
+                    'test.main.init.1,,sayHello'
                 ]
             }
         ]

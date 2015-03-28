@@ -68,6 +68,63 @@ define(function (require) {
     };
 
     /**
+     * 去掉两边的空格，简单缩略版
+     *
+     * @param {string} str 待处理的字符串
+     *
+     * @return {string}
+     */
+    function trim(str) {
+        str = str || '';
+        return str.replace(/^\s|\s$/g, '');
+    }
+
+    /**
+     * 把pointCut配置字符串解析为对象
+     *
+     * @param {string} pointCutStr 配置字符串
+     * 格式为modName.funcName.args,before,after
+     *
+     * @return {Object}
+     */
+    function pointCutParser(pointCutStr) {
+        pointCutStr = pointCutStr || '';
+        // 将module信息、before、after分开
+        var items = pointCutStr.split(',');
+        var modInfo = trim(items[0] || '');
+        var before = trim(items[1]);
+        var after = trim(items[2]);
+
+        // 处理module信息
+        items = modInfo.split('.');
+        var modName = items[1];
+        var funcName = items[2];
+        var argStr = items[3] || '';
+        // 处理args
+        if (argStr) {
+            var args = argStr.split('|');
+            for (var i = 0; i < args.length; i++) {
+                args[i] = trim(args[i]);
+                // 如果是正则就生成正则表达式，替换现有字符串
+                args[i].replace(/^\/(.+)\/([gmi]*)$/, function ($1, $2, $3) {
+                    args[i] = new RegExp($2, $3);
+                });
+            }
+        }
+        else {
+            args = [];
+        }
+
+        return {
+            modName: modName,
+            funcName: funcName,
+            args: args,
+            before: before,
+            after: after
+        };
+    }
+
+    /**
      * 注册aspect
      *
      * @param {string} id aspect的id
@@ -82,15 +139,14 @@ define(function (require) {
     exports.aspectRegister = function(id, namespace, pointCut) {
         id = namespace + '.' + id;
         var loader = require('../loader');
-        var item;
         for (var i = 0; i < pointCut.length; i++) {
-            item = pointCut[i];
+            var item = pointCutParser(pointCut[i]);
             
             item.before && aopEmitter.on(
                 TypeEnum.BEFORE,
                 namespace + '.' + item.modName,
                 item.funcName,
-                item.args || [],
+                item.args,
                 loader.get(id)[item.before]
             );
 
@@ -98,7 +154,7 @@ define(function (require) {
                 TypeEnum.AFTER,
                 namespace + '.' + item.modName,
                 item.funcName,
-                item.args || [],
+                item.args,
                 loader.get(id)[item.after]
             );
         }

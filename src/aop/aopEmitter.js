@@ -38,14 +38,14 @@ define(function (require) {
     };
 
     /**
-     * 找到符合当前条件的事件
+     * 逐个参数比较，找到符合当前条件的事件
      *
-     * @param {Enum} type
-     * @param {string} modName
-     * @param {string} funcName
-     * @param {Array} args
+     * @param {Enum} type 事件类型，before和after两种
+     * @param {string} modName 模块名称
+     * @param {string} funcName 方法名称
+     * @param {Array.<string|RegExp>} args 参数规则
      *
-     * @return 
+     * @return {Array.<function>} 符合条件的回调函数
      */
     function match(type, modName, funcName, args) {
         var result = [];
@@ -66,7 +66,8 @@ define(function (require) {
                 }
                 // 其他类型则判断是否相等
                 else {
-                    ret = ret && item.args[i] === args[j];
+                    // 利用双等来自动转换类型
+                    ret = ret && item.args[i] == args[j];
                 }
                 if (!ret) {
                     break;
@@ -89,7 +90,6 @@ define(function (require) {
      * @param {Array.<string>} args 参数规则列表
      * @param {Object} obj 事件参数
      *
-     * @return 
      */
     exports.emit = function (type, modName, funcName, args, obj) {
         var matches = match(type, modName, funcName, args);
