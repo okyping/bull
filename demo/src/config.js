@@ -6,6 +6,7 @@
  */
 define(function (require) {
     return {
+        namespace: 'test',
         resource: {
             main: require('./main'),
             a: require('./a'),
@@ -34,7 +35,6 @@ define(function (require) {
                     {
                         modName: 'main',
                         funcName: 'init',
-                        args: [],
                         after: 'sayHello'
                     }
                 ]

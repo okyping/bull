@@ -24,7 +24,7 @@
     <script>
         require(['bull', 'config'], function (bull, config) {
             bull.init(config);
-            bull.get('main').init(12);
+            bull.get('test.main').init(12);
         });
     </script>
 </body>

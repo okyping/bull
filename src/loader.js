@@ -15,7 +15,7 @@ define(function (require) {
     var aspectRegister = aop.aspectRegister;
 
     /**
-     * 处理一个require来的module，把所有的方法处理为advisor
+     * 处理一个require来的modules，把所有的方法处理为advisor
      *
      * @return {Object}
      */
@@ -45,15 +45,16 @@ define(function (require) {
      * 处理资源加载，生成名称和文件的映射
      *
      * @param {Object} config 资源配置， key-名称，value-require的模块
-     * @param {boolean|undefined} 是否允许同名模块存在
+     * @param {string} namespace 命名空间
      *
      * @return 
      */
-    function processResource(config, allowConflict) {
+    function processResource(config, namespace) {
         // config是普通对象，无需做hasOwnProperty检测
         for (var key in config) {
             var item = config[key];
-            if (allowConflict && (modules.hasOwnProperty(key))) {
+            key = namespace + '.' + key;
+            if (modules.hasOwnProperty(key)) {
                 throw ('module conflict: module ' + key + ' is already exist');
             }
             else {
@@ -62,10 +63,10 @@ define(function (require) {
         }
     }
 
-    function processAop(config) {
+    function processAop(config, namespace) {
         for (var i = 0; i < config.length; i++) {
             var item = config[i];
-            aspectRegister(item.id, item.pointCut);
+            aspectRegister(item.id, namespace, item.pointCut);
         }
     }
 
@@ -75,14 +76,29 @@ define(function (require) {
      * @return 
      */
     exports.init = function (config) {
+        var namespace = config.namespace;
 
-        processResource(config.resource, config.allowConflict);
-        processAop(config.aspect);
+        if (!namespace) {
+            throw ('namespace not found');
+        }
+
+        processResource(config.resource, namespace);
+        processAop(config.aspect, namespace);
+    };
+
+    exports.checkDeps = function () {
+        for (var key in modules) {
+        }
     };
 
     exports.get = function (name) {
-        return modules[name];
-    }
+        if (name in modules) {
+            return modules[name];
+        }
+        else {
+            throw('module "' + name + '" not found');
+        }
+    };
 
     return exports;
 });

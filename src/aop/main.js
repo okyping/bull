@@ -71,6 +71,7 @@ define(function (require) {
      * 注册aspect
      *
      * @param {string} id aspect的id
+     * @param {string} namespace 模块命名空间 
      * @param {Array.<Object>} pointCut 切点规则
      * @param {string} pointCut.modName 模块名称
      * @param {string|Regexp} pointCut.funcName 方法名称
@@ -78,7 +79,8 @@ define(function (require) {
      *
      * @return 
      */
-    exports.aspectRegister = function(id, pointCut) {
+    exports.aspectRegister = function(id, namespace, pointCut) {
+        id = namespace + '.' + id;
         var loader = require('../loader');
         var item;
         for (var i = 0; i < pointCut.length; i++) {
@@ -86,7 +88,7 @@ define(function (require) {
             
             item.before && aopEmitter.on(
                 TypeEnum.BEFORE,
-                item.modName,
+                namespace + '.' + item.modName,
                 item.funcName,
                 item.args || [],
                 loader.get(id)[item.before]
@@ -94,7 +96,7 @@ define(function (require) {
 
             item.after && aopEmitter.on(
                 TypeEnum.AFTER,
-                item.modName,
+                namespace + '.' + item.modName,
                 item.funcName,
                 item.args || [],
                 loader.get(id)[item.after]
