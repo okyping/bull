@@ -137,7 +137,9 @@ define(function (require) {
      * @return 
      */
     exports.aspectRegister = function(id, namespace, pointCut) {
-        id = namespace + '.' + id;
+        if (id.indexOf('.') === -1) {
+            id = namespace + '.' + id;
+        }
         var loader = require('../loader');
         for (var i = 0; i < pointCut.length; i++) {
             var item = pointCutParser(pointCut[i]);

@@ -15,7 +15,7 @@ define(function (require) {
         },
         aspect: [
             {
-                id: 'aspectTest',
+                id: 'test.aspectTest',
                 pointCut: [
                     // package.modName.funcName.args, before, after
                     // 'test.a.sayHello.a|b|c, sayHi1, sayHi2'
