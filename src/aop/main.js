@@ -22,7 +22,7 @@ define(function (require) {
      *
      * @param {string} modName 模块名称
      * @param {string} funcName 方法名称
-     * @param {Array} args 参数
+     * @param {Array.<*>} args 参数
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
      *
      */
@@ -36,6 +36,7 @@ define(function (require) {
      *
      * @param {string} modName 模块名称
      * @param {string} funcName 方法名称
+     * @param {Array.<*>} args 参数
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
      *
      */
@@ -134,7 +135,6 @@ define(function (require) {
      * @param {string|Regexp} pointCut.funcName 方法名称
      * @param {Array.<string|Regexp>} pointCut.args 参数
      *
-     * @return 
      */
     exports.aspectRegister = function(id, namespace, pointCut) {
         if (id.indexOf('.') === -1) {
