@@ -20,9 +20,16 @@ define(function (require) {
      * @return {Object}
      */
     function moduleProcessor(modName, mod) {
+        if (mod._belong) {
+            throw ('module "' + modName + '" already register to ' + mod._belong);
+        }
+        // 记录一下这个module是属于哪个命名空间的，方便调试
+        mod._belong = modName;
         var item;
         if (typeof mod === 'function') {
+            // 将function的prototype中的方法处理为advisor
             moduleProcessor(modName, mod.prototype);
+            // 将function自身处理为advisor
             var func = createAopProxy(modName, key, mod);
             func.prototype = mod.prototype;
             return func;

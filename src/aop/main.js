@@ -64,7 +64,7 @@ define(function (require) {
                 new JointPoint(this, arguments, modName, funcName, func)
             );
             return ret;
-        }
+        };
     };
 
     /**

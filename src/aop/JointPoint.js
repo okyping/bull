@@ -7,7 +7,7 @@
 define(function (require) {
 
     function JointPoint(originThis, originArgs, modName, funcName, func) {
-        this.this = originThis;
+        this.thisp = originThis;
         this.args = originArgs;
         this.modName = modName;
         this.funcName = funcName;
@@ -18,7 +18,7 @@ define(function (require) {
         constructor: JointPoint,
 
         getThis: function () {
-            return this.this;
+            return this.thisp;
         },
 
         getArgs: function () {
