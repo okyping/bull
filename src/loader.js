@@ -52,15 +52,15 @@ define(function (require) {
      * 处理资源加载，生成名称和文件的映射
      *
      * @param {Object} config 资源配置， key-名称，value-require的模块
-     * @param {string} namespace 命名空间
+     * @param {string} package 命名空间
      *
      * @return 
      */
-    function processResource(config, namespace) {
+    function processResource(config, package) {
         // config是普通对象，无需做hasOwnProperty检测
         for (var key in config) {
             var item = config[key];
-            key = namespace + '.' + key;
+            key = package + '.' + key;
             if (modules.hasOwnProperty(key)) {
                 throw ('module conflict: module ' + key + ' is already exist');
             }
@@ -70,10 +70,10 @@ define(function (require) {
         }
     }
 
-    function processAop(config, namespace) {
+    function processAop(config, package) {
         for (var i = 0; i < config.length; i++) {
             var item = config[i];
-            aspectRegister(item.id, namespace, item.pointCut);
+            aspectRegister(item.id, package, item.pointCut);
         }
     }
 
@@ -83,14 +83,14 @@ define(function (require) {
      * @return 
      */
     exports.init = function (config) {
-        var namespace = config.namespace;
+        var package = config.package;
 
-        if (!namespace) {
-            throw ('namespace not found');
+        if (!package) {
+            throw ('package name not found');
         }
 
-        processResource(config.resource, namespace);
-        processAop(config.aspect, namespace);
+        processResource(config.resource, package);
+        processAop(config.aspect, package);
     };
 
     exports.checkDeps = function () {

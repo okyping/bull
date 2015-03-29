@@ -6,7 +6,7 @@
  */
 define(function (require) {
     return {
-        namespace: 'test',
+        package: 'test',
         resource: {
             main: require('./main'),
             a: require('./a'),
@@ -18,7 +18,7 @@ define(function (require) {
                 id: 'test.aspectTest',
                 pointCut: [
                     // package.modName.funcName.args, before, after
-                    // 'test.a.sayHello.a|b|c, sayHi1, sayHi2'
+                    // 'test.a.sayHello.arg1|arg2|arg3, sayHi1, sayHi2'
                     'test.a.sayHello, sayHi1',
                     'test.a.sayHello, , sayHi2'
                 ]
@@ -26,7 +26,8 @@ define(function (require) {
             {
                 id: 'a',
                 pointCut: [
-                    'test.main.init.1,,sayHello'
+                    'test.main.init.1,,sayHello',
+                    // 'test.aspectTest.sayHi1,,sayHello'
                 ]
             }
         ]
