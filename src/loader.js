@@ -20,11 +20,6 @@ define(function (require) {
      * @return {Object}
      */
     function moduleProcessor(modName, mod) {
-        if (mod._belong) {
-            throw ('module "' + modName + '" already register to ' + mod._belong);
-        }
-        // 记录一下这个module是属于哪个命名空间的，方便调试
-        mod._belong = modName;
         var item;
         if (typeof mod === 'function') {
             // 将function的prototype中的方法处理为advisor
@@ -49,12 +44,25 @@ define(function (require) {
     }
 
     /**
+     * 处理引用的其他配置文件
+     *
+     * @param {} config
+     *
+     * @return 
+     */
+    function processImport(config) {
+        config = config || [];
+        for (var i = 0; i < config.length; i++) {
+            exports.init(config[i]);
+        }
+    }
+
+    /**
      * 处理资源加载，生成名称和文件的映射
      *
      * @param {Object} config 资源配置， key-名称，value-require的模块
      * @param {string} package 命名空间
      *
-     * @return 
      */
     function processResource(config, package) {
         // config是普通对象，无需做hasOwnProperty检测
@@ -62,14 +70,33 @@ define(function (require) {
             var item = config[key];
             key = package + '.' + key;
             if (modules.hasOwnProperty(key)) {
-                throw ('module conflict: module ' + key + ' is already exist');
+                if (key !== item._belong) {
+                    // 当模块名已经存在，并且与当前模块名称不同，产生冲突
+                    throw ('module conflict: module "' + key + '" is already register to "' + item._belong + '"');
+                }
+                // 如果已存在此模块名，并且与当前模块名称相同，则不处理
             }
             else {
+                if (item._belong) {
+                    // 当前模块已被注册为其他名称，应避免相同模块不同名称的现象存在
+                    throw ('module "' + key + '" already register to "' + item._belong + '"');
+                }
+                // 记录一下这个module是属于哪个命名空间的，方便调试
+                item._belong = key;
                 modules[key] = moduleProcessor(key, item);
             }
         }
     }
 
+    /**
+     * 处理切点配置
+     *
+     * @param {Object} config 切点配置
+     * @param {string} config.id 切点id，关联到resource对应的id
+     * @param {Array.<string>} config.pointCut 决定了该advice需要在哪些位置执行
+     * @param {string} package 包名
+     *
+     */
     function processAop(config, package) {
         for (var i = 0; i < config.length; i++) {
             var item = config[i];
@@ -85,12 +112,13 @@ define(function (require) {
     exports.init = function (config) {
         var package = config.package;
 
-        if (!package) {
+        if (!package && (config.resource || config.aspect)) {
             throw ('package name not found');
         }
 
-        processResource(config.resource, package);
-        processAop(config.aspect, package);
+        processImport(config.importConfig);
+        config.resource && processResource(config.resource, package);
+        config.aspect && processAop(config.aspect, package);
     };
 
     exports.checkDeps = function () {

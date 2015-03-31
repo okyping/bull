@@ -38,11 +38,12 @@ define(function (require) {
      * @param {string} funcName 方法名称
      * @param {Array.<*>} args 参数
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
+     * @param {*} returnValue 方法的返回值
      *
      */
-    function after(modName, funcName, args, jointPoint) {
+    function after(modName, funcName, args, jointPoint, returnValue) {
         args = Array.prototype.slice.call(args, 0);
-        aopEmitter.emit(TypeEnum.AFTER, modName, funcName, args, jointPoint);
+        aopEmitter.emit(TypeEnum.AFTER, modName, funcName, args, jointPoint, returnValue);
     }
 
     /**
@@ -62,7 +63,7 @@ define(function (require) {
             var ret = func.apply(this, arguments);
             after(
                 modName, funcName, arguments,
-                new JointPoint(this, arguments, modName, funcName, func)
+                new JointPoint(this, arguments, modName, funcName, func, ret)
             );
             return ret;
         };
