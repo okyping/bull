@@ -9,6 +9,7 @@
 define(function (require) {
     var exports = {};
     var modules = {};
+    var injection = {};
 
     var aop = require('./aop/main');
     var createAopProxy = aop.createAopProxy;
@@ -65,8 +66,10 @@ define(function (require) {
      *
      */
     function processResource(config, package) {
-        // config是普通对象，无需做hasOwnProperty检测
         for (var key in config) {
+            if (!config.hasOwnProperty(key)) {
+                continue;
+            }
             var item = config[key];
             key = package + '.' + key;
             if (modules.hasOwnProperty(key)) {
@@ -84,6 +87,31 @@ define(function (require) {
                 // 记录一下这个module是属于哪个命名空间的，方便调试
                 item._belong = key;
                 modules[key] = moduleProcessor(key, item);
+            }
+        }
+    }
+
+    /**
+     * 处理依赖注入
+     *
+     * @param {Array.<Object>} config 注入配置
+     * @param {string} config.id 注入的模块名
+     * @param {Object} config.method 注入的方法
+     * @param {Array.<string>} config.args 注入的参数
+     * @param {string} package 命名空间
+     *
+     * @return 
+     */
+    function processInjection(config, package) {
+        config = config || [];
+
+        for (var i = 0; i < config.length; i++) {
+            var item = config[i];
+            injection[item.id] = injection[item.id] || {};
+            var mod = injection[item.id];
+            var method = item.method;
+            for (var key in method) {
+                mod[key] = method[key];
             }
         }
     }
@@ -119,11 +147,16 @@ define(function (require) {
         processImport(config.importConfig);
         config.resource && processResource(config.resource, package);
         config.aspect && processAop(config.aspect, package);
+        config.injection && processInjection(config.injection, package);
     };
 
     exports.checkDeps = function () {
         for (var key in modules) {
         }
+    };
+
+    exports.getInjection = function (name) {
+        return injection[name];
     };
 
     exports.get = function (name) {

@@ -27,7 +27,6 @@ define(function (require) {
      *
      */
     function before(modName, funcName, args, jointPoint) {
-        args = Array.prototype.slice.call(args, 0);
         aopEmitter.emit(TypeEnum.BEFORE, modName, funcName, args, jointPoint);
     }
 
@@ -42,7 +41,6 @@ define(function (require) {
      *
      */
     function after(modName, funcName, args, jointPoint, returnValue) {
-        args = Array.prototype.slice.call(args, 0);
         aopEmitter.emit(TypeEnum.AFTER, modName, funcName, args, jointPoint, returnValue);
     }
 
@@ -55,15 +53,34 @@ define(function (require) {
      *
      */
     exports.createAopProxy = function (modName, funcName, func) {
+        var loader = require('../loader');
+
         return function () {
             before(
-                modName, funcName, arguments,
-                new JointPoint(this, arguments, modName, funcName, func)
+                modName, funcName, args,
+                new JointPoint(this, args, modName, funcName, func)
             );
-            var ret = func.apply(this, arguments);
+            // 处理注入
+            var injection = loader.getInjection(modName);
+            var args = [];
+
+            if (injection && funcName in injection) {
+                var deps = injection[funcName] || [];
+                // 有依赖注入的时候使用注入参数
+                for (var i = 0; i < deps.length; i++) {
+                    args.push(loader.get(deps[i]));
+                }
+            }
+            else {
+                // 没有依赖注入就用arguments
+                args = Array.prototype.slice.call(arguments, 0);
+            }
+            // 执行函数体
+            var ret = func.apply(this, args);
+
             after(
-                modName, funcName, arguments,
-                new JointPoint(this, arguments, modName, funcName, func, ret)
+                modName, funcName, args,
+                new JointPoint(this, args, modName, funcName, func, ret)
             );
             return ret;
         };
@@ -138,10 +155,10 @@ define(function (require) {
      *
      */
     exports.aspectRegister = function(id, package, pointCut) {
+        var loader = require('../loader');
         if (id.indexOf('.') === -1) {
             id = package + '.' + id;
         }
-        var loader = require('../loader');
         for (var i = 0; i < pointCut.length; i++) {
             var item = pointCutParser(pointCut[i]);
             
