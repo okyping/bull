@@ -37,11 +37,10 @@ define(function (require) {
      * @param {string} funcName 方法名称
      * @param {Array.<*>} args 参数
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
-     * @param {*} returnValue 方法的返回值
      *
      */
-    function after(modName, funcName, args, jointPoint, returnValue) {
-        aopEmitter.emit(TypeEnum.AFTER, modName, funcName, args, jointPoint, returnValue);
+    function after(modName, funcName, args, jointPoint) {
+        aopEmitter.emit(TypeEnum.AFTER, modName, funcName, args, jointPoint);
     }
 
     /**
@@ -56,13 +55,14 @@ define(function (require) {
         var loader = require('../loader');
 
         return function () {
+            var args = [];
+            var originArguments = Array.prototype.slice.call(arguments, 0);
             before(
-                modName, funcName, args,
-                new JointPoint(this, args, modName, funcName, func)
+                modName, funcName, originArguments,
+                new JointPoint(this, originArguments, modName, funcName, func)
             );
             // 处理注入
             var injection = loader.getInjection(modName);
-            var args = [];
 
             if (injection && funcName in injection) {
                 var deps = injection[funcName] || [];
@@ -70,17 +70,18 @@ define(function (require) {
                 for (var i = 0; i < deps.length; i++) {
                     args.push(loader.get(deps[i]));
                 }
+                args.push(originArguments);
             }
             else {
                 // 没有依赖注入就用arguments
-                args = Array.prototype.slice.call(arguments, 0);
+                args = originArguments;
             }
             // 执行函数体
             var ret = func.apply(this, args);
 
             after(
-                modName, funcName, args,
-                new JointPoint(this, args, modName, funcName, func, ret)
+                modName, funcName, originArguments,
+                new JointPoint(this, originArguments, modName, funcName, func, ret)
             );
             return ret;
         };
@@ -167,7 +168,12 @@ define(function (require) {
                 package + '.' + item.modName,
                 item.funcName,
                 item.args,
-                loader.get(id)[item.before]
+                function (jointPoint) {
+                    loader.get(id)[item.before].apply(
+                        jointPoint.getThis(),
+                        jointPoint.getArgs()
+                    )
+                }
             );
 
             item.after && aopEmitter.on(
@@ -175,7 +181,12 @@ define(function (require) {
                 package + '.' + item.modName,
                 item.funcName,
                 item.args,
-                loader.get(id)[item.after]
+                function (jointPoint) {
+                    loader.get(id)[item.after].apply(
+                        jointPoint.getThis(),
+                        jointPoint.getArgs()
+                    )
+                }
             );
         }
     };
