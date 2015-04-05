@@ -161,33 +161,33 @@ define(function (require) {
             id = package + '.' + id;
         }
         for (var i = 0; i < pointCut.length; i++) {
-            var item = pointCutParser(pointCut[i]);
-            
-            item.before && aopEmitter.on(
-                TypeEnum.BEFORE,
-                package + '.' + item.modName,
-                item.funcName,
-                item.args,
-                function (jointPoint) {
-                    loader.get(id)[item.before].apply(
-                        jointPoint.getThis(),
-                        jointPoint.getArgs()
-                    )
-                }
-            );
+            (function (item) {
+                item.before && aopEmitter.on(
+                    TypeEnum.BEFORE,
+                    package + '.' + item.modName,
+                    item.funcName,
+                    item.args,
+                    function (jointPoint) {
+                        loader.get(id)[item.before].apply(
+                            jointPoint.getThis(),
+                            jointPoint.getArgs()
+                        )
+                    }
+                );
 
-            item.after && aopEmitter.on(
-                TypeEnum.AFTER,
-                package + '.' + item.modName,
-                item.funcName,
-                item.args,
-                function (jointPoint) {
-                    loader.get(id)[item.after].apply(
-                        jointPoint.getThis(),
-                        jointPoint.getArgs()
-                    )
-                }
-            );
+                item.after && aopEmitter.on(
+                    TypeEnum.AFTER,
+                    package + '.' + item.modName,
+                    item.funcName,
+                    item.args,
+                    function (jointPoint) {
+                        loader.get(id)[item.after].apply(
+                            jointPoint.getThis(),
+                            jointPoint.getArgs()
+                        )
+                    }
+                );
+            })(pointCutParser(pointCut[i]));
         }
     };
 

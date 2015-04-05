@@ -25,9 +25,9 @@ define(function (require) {
         var cur = events;
         cur[type] = cur[type] || {};
         cur = cur[type];
-        cur[modName] = events[modName] || {};
+        cur[modName] = cur[modName] || {};
         cur = cur[modName];
-        cur[funcName] = events[funcName] || [];
+        cur[funcName] = cur[funcName] || [];
         cur = cur[funcName];
         cur.push(
             {
