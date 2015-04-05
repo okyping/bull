@@ -117,6 +117,7 @@ define(function (require) {
 
         // 处理module信息
         items = modInfo.split('.');
+        var packageName = items[0];
         var modName = items[1];
         var funcName = items[2];
         var argStr = items[3] || '';
@@ -136,6 +137,7 @@ define(function (require) {
         }
 
         return {
+            packageName: packageName,
             modName: modName,
             funcName: funcName,
             args: args,
@@ -164,7 +166,7 @@ define(function (require) {
             (function (item) {
                 item.before && aopEmitter.on(
                     TypeEnum.BEFORE,
-                    package + '.' + item.modName,
+                    item.packageName + '.' + item.modName,
                     item.funcName,
                     item.args,
                     function (jointPoint) {
@@ -177,7 +179,7 @@ define(function (require) {
 
                 item.after && aopEmitter.on(
                     TypeEnum.AFTER,
-                    package + '.' + item.modName,
+                    item.packageName + '.' + item.modName,
                     item.funcName,
                     item.args,
                     function (jointPoint) {
