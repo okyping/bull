@@ -22,7 +22,6 @@ define(function (require) {
      *
      * @param {string} modName 模块名称
      * @param {string} funcName 方法名称
-     * @param {Array.<*>} args 参数
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
      *
      */
@@ -35,7 +34,6 @@ define(function (require) {
      *
      * @param {string} modName 模块名称
      * @param {string} funcName 方法名称
-     * @param {Array.<*>} args 参数
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
      *
      */
@@ -130,27 +128,11 @@ define(function (require) {
         var packageName = items[0];
         var modName = items[1];
         var funcName = items[2];
-        var argStr = items[3] || '';
-        // 处理args
-        if (argStr) {
-            var args = argStr.split('|');
-            for (var i = 0; i < args.length; i++) {
-                args[i] = trim(args[i]);
-                // 如果是正则就生成正则表达式，替换现有字符串
-                args[i].replace(/^\/(.+)\/([gmi]*)$/, function ($1, $2, $3) {
-                    args[i] = new RegExp($2, $3);
-                });
-            }
-        }
-        else {
-            args = [];
-        }
 
         return {
             packageName: packageName,
             modName: modName,
             funcName: funcName,
-            args: args,
             before: before,
             after: after
         };
