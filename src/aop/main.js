@@ -70,7 +70,7 @@ define(function (require) {
                 for (var i = 0; i < deps.length; i++) {
                     args.push(loader.get(deps[i]));
                 }
-                args.push(originArguments);
+                args = args.concat(originArguments);
             }
             else {
                 // 没有依赖注入就用arguments
