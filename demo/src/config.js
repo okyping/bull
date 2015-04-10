@@ -10,15 +10,24 @@ define(function (require) {
         resource: {
             main: require('./main'),
             a: require('./a'),
-            b: require('./b'),
+            c: require('./c'),
             aspectTest: require('./aspectTest')
         },
+        injection: [
+            {
+                id: 'test.aspectTest',
+                method: {
+                    sayHi1: ['test.c', 'jointPoint'],
+                    sayHi2: ['test.c', 'jointPoint']
+                }
+            }
+        ],
         aspect: [
             {
                 id: 'test.aspectTest',
                 pointCut: [
                     // package.modName.funcName.args, before, after
-                    // 'test.a.sayHello.arg1|arg2|arg3, sayHi1, sayHi2'
+                    // 'test.a.sayHello, sayHi1, sayHi2'
                     'test.a.sayHello, sayHi1',
                     'test.a.sayHello, , sayHi2'
                 ]

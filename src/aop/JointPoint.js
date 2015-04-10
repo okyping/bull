@@ -49,6 +49,10 @@ define(function (require) {
             return this.func;
         },
 
+        setReturnValue: function (returnValue) {
+            this.returnValue = returnValue;
+        },
+
         getReturnValue: function () {
             return this.returnValue;
         }

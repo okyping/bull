@@ -10,17 +10,16 @@ define(function (require) {
     var events = {};
 
     /**
-     * 绑定事件，符合modName、funcName、args条件的事件将调用func回调,
-     * modName、funcName、args三者至少有一个
+     * 绑定事件，符合modName、funcName的事件将调用func回调,
+     * modName、funcName至少有一个
      *
      * @param {Enum} type 类型，before和after
      * @param {string} modName 模块名称
      * @param {string} funcName 方法名称
-     * @param {Array.<string|RegExp>} args 参数规则列表
      * @param {function} func 回调函数
      *
      */
-    exports.on = function (type, modName, funcName, args, func) {
+    exports.on = function (type, modName, funcName, func) {
         type = 'type' + type;
         var cur = events;
         cur[type] = cur[type] || {};
@@ -29,12 +28,7 @@ define(function (require) {
         cur = cur[modName];
         cur[funcName] = cur[funcName] || [];
         cur = cur[funcName];
-        cur.push(
-            {
-                func: func,
-                args: args || []
-            }
-        );
+        cur.push(func);
     };
 
     /**
@@ -47,36 +41,19 @@ define(function (require) {
      *
      * @return {Array.<function>} 符合条件的回调函数
      */
-    function match(type, modName, funcName, args) {
+    function match(type, modName, funcName) {
         var result = [];
         type = 'type' + type;
         var cur = events;
+        // 类型筛选，before、after
         cur = cur[type] || {};
+        // 模块名筛选
         cur = cur[modName] || {};
+        // 方法名筛选
         cur = cur[funcName] || [];
         // 对每个回调进行处理
         for (var i = 0; i < cur.length; i++) {
-            var item = cur[i];
-            var ret = true;
-            // 比较参数是否符合规定
-            for (var j = 0; j < item.args.length; j++) {
-                // 是否是正则表达式
-                if (item.args[j].test) {
-                    ret = ret && item.args[j].test(args[j]);
-                }
-                // 其他类型则判断是否相等
-                else {
-                    // 利用双等来自动转换类型
-                    ret = ret && item.args[i] == args[j];
-                }
-                if (!ret) {
-                    break;
-                }
-            }
-            if (ret) {
-                // 符合规则
-                result.push(item.func);
-            }
+            result.push(cur[i]);
         }
         return result;
     }
@@ -87,12 +64,11 @@ define(function (require) {
      * @param {Enum} type 类型，before和after
      * @param {string} modName 模块名称
      * @param {string} funcName 方法名称
-     * @param {Array.<string>} args 参数规则列表
      * @param {Object} obj 事件参数
      *
      */
-    exports.emit = function (type, modName, funcName, args, obj) {
-        var matches = match(type, modName, funcName, args);
+    exports.emit = function (type, modName, funcName, obj) {
+        var matches = match(type, modName, funcName);
         for (var i = 0; i < matches.length; i++) {
             matches[i](obj);
         }

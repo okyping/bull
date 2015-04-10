@@ -26,8 +26,8 @@ define(function (require) {
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
      *
      */
-    function before(modName, funcName, args, jointPoint) {
-        aopEmitter.emit(TypeEnum.BEFORE, modName, funcName, args, jointPoint);
+    function before(modName, funcName, jointPoint) {
+        aopEmitter.emit(TypeEnum.BEFORE, modName, funcName, jointPoint);
     }
 
     /**
@@ -39,9 +39,14 @@ define(function (require) {
      * @param {JointPoint} jointPoint 切入点对象，可以从此对象获取当前函数的信息
      *
      */
-    function after(modName, funcName, args, jointPoint) {
-        aopEmitter.emit(TypeEnum.AFTER, modName, funcName, args, jointPoint);
+    function after(modName, funcName, jointPoint) {
+        aopEmitter.emit(TypeEnum.AFTER, modName, funcName, jointPoint);
     }
+
+    // 除模块外还可以被注入的名字
+    var specKey = {
+        'jointPoint': true
+    };
 
     /**
      * 包装一个function，使之成为aop的jointPoint，具有before和after的切入能力
@@ -57,32 +62,37 @@ define(function (require) {
         return function () {
             var args = [];
             var originArguments = Array.prototype.slice.call(arguments, 0);
-            before(
-                modName, funcName, originArguments,
-                new JointPoint(this, originArguments, modName, funcName, func)
-            );
-            // 处理注入
-            var injection = loader.getInjection(modName);
+            var jointPoint = new JointPoint(this, originArguments, modName, funcName, func);
 
-            if (injection && funcName in injection) {
-                var deps = injection[funcName] || [];
-                // 有依赖注入的时候使用注入参数
-                for (var i = 0; i < deps.length; i++) {
-                    args.push(loader.get(deps[i]));
+            // 除模块外还可以被注入的值
+            var specValue = {
+                'jointPoint': jointPoint
+            };
+
+            before(modName, funcName, jointPoint);
+            // 处理注入
+            var injection = loader.getInjection(modName) || {};
+            var deps = injection[funcName] || [];
+
+            // 有依赖注入的时候使用注入参数
+            for (var i = 0; i < deps.length; i++) {
+                var key = deps[i];
+                if (key in specKey) {
+                    args.push(specValue[key]);
                 }
-                args = args.concat(originArguments);
+                else {
+                    args.push(loader.get(key));
+                }
             }
-            else {
-                // 没有依赖注入就用arguments
-                args = originArguments;
-            }
+            args = args.concat(originArguments);
+
             // 执行函数体
             var ret = func.apply(this, args);
 
-            after(
-                modName, funcName, originArguments,
-                new JointPoint(this, originArguments, modName, funcName, func, ret)
-            );
+            jointPoint.setReturnValue(ret);
+
+            after(modName, funcName, jointPoint);
+
             return ret;
         };
     };
@@ -168,7 +178,6 @@ define(function (require) {
                     TypeEnum.BEFORE,
                     item.packageName + '.' + item.modName,
                     item.funcName,
-                    item.args,
                     function (jointPoint) {
                         loader.get(id)[item.before].apply(
                             jointPoint.getThis(),
@@ -181,7 +190,6 @@ define(function (require) {
                     TypeEnum.AFTER,
                     item.packageName + '.' + item.modName,
                     item.funcName,
-                    item.args,
                     function (jointPoint) {
                         loader.get(id)[item.after].apply(
                             jointPoint.getThis(),

@@ -7,11 +7,11 @@
  */
 define(function (require) {
     var exports = {};
-    exports.sayHi1 = function () {
-        alert('sayHi1');
+    exports.sayHi1 = function (c, jt) {
+        alert('before sayHello' + c.number);
     };
-    exports.sayHi2 = function () {
-        alert('sayHi2');
+    exports.sayHi2 = function (c, jt) {
+        alert('after sayHello' + c.number + jt.getFuncName());
     };
     return exports;
 });
