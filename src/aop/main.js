@@ -11,9 +11,9 @@ define(function (require) {
     var aopEmitter = require('./aopEmitter');
 
     // 触发事件类型
-    var TypeEnum = {
-        BEFORE: 1,
-        AFTER: 2
+    var TypeEnum = exports.TypeEnum = {
+        BEFORE: 'type1',
+        AFTER: 'type2'
     };
 
 
@@ -160,11 +160,15 @@ define(function (require) {
                     TypeEnum.BEFORE,
                     item.packageName + '.' + item.modName,
                     item.funcName,
-                    function (jointPoint) {
-                        loader.get(id)[item.before].apply(
-                            jointPoint.getThis(),
-                            jointPoint.getArgs()
-                        )
+                    {
+                        modName: id,
+                        funcName: item.before,
+                        func: function (jointPoint) {
+                            loader.get(id)[item.before].apply(
+                                jointPoint.getThis(),
+                                jointPoint.getArgs()
+                            )
+                        }
                     }
                 );
 
@@ -172,11 +176,15 @@ define(function (require) {
                     TypeEnum.AFTER,
                     item.packageName + '.' + item.modName,
                     item.funcName,
-                    function (jointPoint) {
-                        loader.get(id)[item.after].apply(
-                            jointPoint.getThis(),
-                            jointPoint.getArgs()
-                        )
+                    {
+                        modName: id,
+                        funcName: item.after,
+                        func: function (jointPoint) {
+                            loader.get(id)[item.after].apply(
+                                jointPoint.getThis(),
+                                jointPoint.getArgs()
+                            )
+                        }
                     }
                 );
             })(pointCutParser(pointCut[i]));

@@ -100,7 +100,7 @@ define(function (require) {
      * @param {Array.<string>} config.args 注入的参数
      * @param {string} package 命名空间
      *
-     * @return 
+     * @return
      */
     function processInjection(config, package) {
         config = config || [];
@@ -150,21 +150,154 @@ define(function (require) {
         config.injection && processInjection(config.injection, package);
     };
 
-    exports.checkDeps = function () {
-        for (var key in modules) {
+    exports.getInjection = function (modName) {
+        return injection[modName];
+    };
+
+    /**
+     * 获取一个模块所有需要注入的参数
+     *
+     * @Param {string} modName
+     *
+     * @return {Array.<string>}
+     */
+    exports.getDeps = function (modName) {
+        var injections = injection[modName];
+        var set = {};
+        for (var key in injections) {
+            if (injections.hasOwnProperty(key)) {
+                var item = injections[key];
+                for (var i = 0; i < item.length; i++) {
+                    set[item[i]] = true;
+                }
+            }
         }
+        // 删除对自己的依赖
+        delete set[modName];
+        var res = [];
+        for (var key in set) {
+            if (key.indexOf('.') > -1) {
+                res.push(key);
+            }
+        }
+
+        return res;
     };
 
-    exports.getInjection = function (name) {
-        return injection[name];
+    exports.queryDep = function (modName) {
+        var deps = exports.getDeps(modName);
+        console.log('deps of ' + modName + ' is:');
+        if (!deps.length) {
+            console.log('none');
+        }
+        for (var i = 0; i < deps.length; i++) {
+            console.log(deps[i]);
+        }
+        console.log('-----------------------------------');
     };
 
-    exports.get = function (name) {
-        if (name in modules) {
-            return modules[name];
+    /**
+     * 查询此模块在哪些地方调用，调试用的
+     *
+     * @Param {string} modName 模块名称
+     *
+     */
+    exports.queryInvoke = function (modName) {
+        var res = [];
+        // 去重用的
+        var set = {};
+        for (var mod in injection) {
+            if (injection.hasOwnProperty(mod)) {
+                var funcs = injection[mod];
+                for (var funcName in funcs) {
+                    if (funcs.hasOwnProperty(funcName)) {
+                        var depsList = funcs[funcName];
+                        for (var i = 0; i < depsList.length; i++) {
+                            var depName = depsList[i];
+                            if (depName === modName) {
+                                var key = mod + depName;
+                                if (key in set) {
+                                    continue;
+                                }
+                                else {
+                                    set[key] = true;
+                                }
+                                res.push(
+                                    {
+                                        modName: mod,
+                                        funcName: funcName
+                                    }
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (res.length) {
+            console.log('module ' + modName + ' used by these method:');
+            for (var i = 0; i < res.length; i++) {
+                console.log(res[i].modName + ' -> ' + funcName);
+            }
         }
         else {
-            throw('module "' + name + '" not found');
+            console.log('module' + modName + ' used nowhere');
+        }
+        console.log('-----------------------------------');
+    };
+
+
+    /**
+     * 检查每个模块的依赖关系，打印没有被加载的依赖
+     *
+     */
+    exports.checkDep = function () {
+        var deps;
+        var count = 0;
+        console.log('checking deps:');
+        for (var key in modules) {
+            if (modules.hasOwnProperty(key)) {
+                deps = exports.getDeps(key);
+                for (var i = 0; i < deps.length; i++) {
+                    if (!exports.has(deps[i])) {
+                        if (deps[i].indexOf('.') > -1) {
+                            count++;
+                            console.log(deps[i] + ' is required by ' + key + ' but now missing');
+                        }
+                    }
+                }
+            }
+        }
+        if (!count) {
+            console.log('all dependencies is ready');
+        }
+        console.log('-----------------------------------');
+    };
+
+    /**
+     * 判断是否加载了模块
+     *
+     * @Param {string} modName
+     *
+     * @return {boolean}
+     */
+    exports.has = function (modName) {
+        return modName in modules;
+    };
+
+    /**
+     * 获取对应的模块
+     *
+     * @Param {string} modName
+     *
+     * @return {Object}
+     */
+    exports.get = function (modName) {
+        if (modName in modules) {
+            return modules[modName];
+        }
+        else {
+            throw('module "' + modName + '" not found');
         }
     };
 

@@ -7,7 +7,6 @@
  */
 define(function (require) {
     var exports = {};
-    var bull = require('bull');
 
     exports.init = function () {
     };

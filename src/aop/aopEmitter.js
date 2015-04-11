@@ -16,11 +16,13 @@ define(function (require) {
      * @param {Enum} type 类型，before和after
      * @param {string} modName 模块名称
      * @param {string} funcName 方法名称
-     * @param {function} func 回调函数
+     * @param {Object} modInfo 切入的模块信息
+     * @param {string} modInfo.modName 模块名称
+     * @param {string} modInfo.funcName 函数名称
+     * @param {function} modInfo.func 回调函数
      *
      */
-    exports.on = function (type, modName, funcName, func) {
-        type = 'type' + type;
+    exports.on = function (type, modName, funcName, modInfo) {
         var cur = events;
         cur[type] = cur[type] || {};
         cur = cur[type];
@@ -28,7 +30,13 @@ define(function (require) {
         cur = cur[modName];
         cur[funcName] = cur[funcName] || [];
         cur = cur[funcName];
-        cur.push(func);
+        cur.push(
+            {
+                func: modInfo.func,
+                funcName: modInfo.funcName,
+                modName: modInfo.modName
+            }
+        );
     };
 
     /**
@@ -43,7 +51,6 @@ define(function (require) {
      */
     function match(type, modName, funcName) {
         var result = [];
-        type = 'type' + type;
         var cur = events;
         // 类型筛选，before、after
         cur = cur[type] || {};
@@ -58,6 +65,36 @@ define(function (require) {
         return result;
     }
 
+    exports.queryBefore = function (modName, funcName) {
+        var aop = require('./main');
+        var typeBefore = aop.TypeEnum.BEFORE;
+        var res = match(typeBefore, modName, funcName);
+        console.log('method before ' + modName + ' -> ' + funcName + ':');
+        if (!res.length) {
+            console.log('none');
+            return;
+        }
+        for (var i = 0; i < res.length; i++) {
+            console.log(res[i].modName + ' -> ' + res[i].funcName);
+        }
+        console.log('-----------------------------------');
+    };
+
+    exports.queryAfter= function (modName, funcName) {
+        var aop = require('./main');
+        var typeAfter = aop.TypeEnum.AFTER;
+        var res = match(typeAfter, modName, funcName);
+        if (!res.length) {
+            console.log('none');
+            return;
+        }
+        console.log('method after ' + modName + ' -> ' + funcName + ':');
+        for (var i = 0; i < res.length; i++) {
+            console.log(res[i].modName + ' -> ' + res[i].funcName);
+        }
+        console.log('-----------------------------------');
+    };
+
     /**
      * 触发事件
      *
@@ -70,7 +107,7 @@ define(function (require) {
     exports.emit = function (type, modName, funcName, obj) {
         var matches = match(type, modName, funcName);
         for (var i = 0; i < matches.length; i++) {
-            matches[i](obj);
+            matches[i].func(obj);
         }
     };
 
