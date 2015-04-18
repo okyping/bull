@@ -197,6 +197,42 @@ define(function (require) {
     };
 
     /**
+     * 列出查询到的所有模块
+     *
+     * @param {string} queryWord
+     *
+     */
+    exports.queryModule = function (queryWord) {
+        queryWord = queryWord || '';
+        var ret = [];
+        for (var key in modules) {
+            if (modules.hasOwnProperty(key)) {
+                // 有检索词就查询
+                if (queryWord) {
+                    if (key.indexOf(queryWord) > -1) {
+                        ret.push(key);
+                    }
+                }
+                // 没有检索词就返回所有模块
+                else {
+                    ret.push(key);
+                }
+            }
+        }
+        if (queryWord) {
+            console.log('modules contains "' + queryWord + '":');
+        }
+        else {
+            console.log('all modules:');
+        }
+        for (var i = 0; i < ret.length; i++) {
+            console.log(ret[i]);
+        }
+        console.log('-----------------------------------');
+    };
+
+
+    /**
      * 查询此模块在哪些地方调用，调试用的
      *
      * @Param {string} modName 模块名称
