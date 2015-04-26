@@ -164,7 +164,11 @@ define(function (require) {
                         modName: id,
                         funcName: item.before,
                         func: function (jointPoint) {
-                            loader.get(id)[item.before].apply(
+                            var func = loader.get(id)[item.before];
+                            if (!func) {
+                                throw('module "' + id + '" don\'t have method ' + item.before);
+                            }
+                            func.apply(
                                 jointPoint.getThis(),
                                 jointPoint.getArgs()
                             )
@@ -180,7 +184,11 @@ define(function (require) {
                         modName: id,
                         funcName: item.after,
                         func: function (jointPoint) {
-                            loader.get(id)[item.after].apply(
+                            var func = loader.get(id)[item.after];
+                            if (!func) {
+                                throw('module "' + id + '" don\'t have method ' + item.after);
+                            }
+                            func.apply(
                                 jointPoint.getThis(),
                                 jointPoint.getArgs()
                             )

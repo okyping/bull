@@ -73,7 +73,7 @@ define(function (require) {
             var item = config[key];
             key = package + '.' + key;
             if (modules.hasOwnProperty(key)) {
-                if (key !== item._belong) {
+                if (item._belong && key !== item._belong) {
                     // 当模块名已经存在，并且与当前模块名称不同，产生冲突
                     throw ('module conflict: module "' + key + '" is already register to "' + item._belong + '"');
                 }
