@@ -23,11 +23,19 @@ define(function (require) {
         style.position = 'fixed';
         style.right = '20px';
         style.top = '20px';
-        el.innerHTML = '点此查看\n模块关系';
+        style.border = 'solid 1px black';
+        style.backgroundColor = '#eee';
+        el.innerHTML = '点此查看<br/>模块关系';
+        // 防止二次点击
+        var clickFlag = false;
         el.onclick = function () {
-            require(['bull/debug'], function (debug) {
-                console.log('debug');
-            });
+            if (!clickFlag) {
+                clickFlag = true;
+                require(['bull/debug'], function (debug) {
+                    clickFlag = false;
+                    debug.entry();
+                });
+            }
         };
         document.body.insertBefore(el, document.body.firstChild)
     }

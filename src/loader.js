@@ -196,13 +196,7 @@ define(function (require) {
         console.log('-----------------------------------');
     };
 
-    /**
-     * 列出查询到的所有模块
-     *
-     * @param {string} queryWord
-     *
-     */
-    exports.queryModule = function (queryWord) {
+    exports.getModules = function (queryWord) {
         queryWord = queryWord || '';
         var ret = [];
         for (var key in modules) {
@@ -219,14 +213,25 @@ define(function (require) {
                 }
             }
         }
+        return ret;
+    };
+
+    /**
+     * 列出查询到的所有模块
+     *
+     * @param {string=} queryWord
+     *
+     */
+    exports.queryModule = function (queryWord) {
+        var result = exports.getModules(queryWord);
         if (queryWord) {
             console.log('modules contains "' + queryWord + '":');
         }
         else {
             console.log('all modules:');
         }
-        for (var i = 0; i < ret.length; i++) {
-            console.log(ret[i]);
+        for (var i = 0; i < result.length; i++) {
+            console.log(result[i]);
         }
         console.log('-----------------------------------');
     };
